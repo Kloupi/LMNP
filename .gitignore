@@ -1,0 +1,11 @@
+# Dépendances
+node_modules/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+*.log
+
+# Exports générés localement
+*.csv
+FEC_*.txt

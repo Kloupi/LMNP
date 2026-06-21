@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LMNP Compta — Bilan, compte de résultat & FEC</title>
+  <meta name="description" content="Outil de comptabilité pour loueurs meublés non professionnels (LMNP au réel). Saisissez vos recettes et dépenses, exportez votre bilan, compte de résultat et fichier des écritures comptables." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- Décor d'arrière-plan animé -->
+  <div class="bg-orbs" aria-hidden="true">
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">L</div>
+      <div class="brand-text">
+        <strong>LMNP&nbsp;Compta</strong>
+        <span>Loueur meublé non professionnel · régime réel</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="live-result" id="liveResult" title="Résultat fiscal de l'exercice sélectionné">
+        <span class="live-label"><span id="liveExercice">Exercice</span> · résultat fiscal</span>
+        <span class="live-value" id="liveResultValue">0&nbsp;€</span>
+      </div>
+      <button class="btn btn-ghost" id="btnReset" type="button">Réinitialiser</button>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero reveal">
+    <div class="hero-inner">
+      <span class="badge-pill">v2 · multi-exercices &amp; liasse fiscale</span>
+      <h1>Votre comptabilité LMNP, <span class="grad">jusqu'à la liasse fiscale</span>.</h1>
+      <p class="hero-sub">
+        Gérez plusieurs exercices avec report d'une année sur l'autre. L'outil construit votre
+        <strong>compte de résultat</strong>, votre <strong>bilan</strong>, le <strong>FEC</strong>,
+        et met en forme votre <strong>liasse fiscale</strong> (tableaux 2033) prête à déclarer.
+      </p>
+      <div class="hero-cta">
+        <button class="btn btn-primary" id="btnStart" type="button">Commencer la saisie</button>
+        <a class="btn btn-ghost" href="#exercice" id="btnGoSynthese">Voir la synthèse</a>
+      </div>
+    </div>
+    <div class="hero-card reveal">
+      <div class="mini-stat">
+        <span class="mini-label">Recettes encaissées</span>
+        <span class="mini-value" data-counter id="statRecettes">0</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-label">Charges déductibles</span>
+        <span class="mini-value" data-counter id="statCharges">0</span>
+      </div>
+      <div class="mini-stat">
+        <span class="mini-label">Amortissements</span>
+        <span class="mini-value" data-counter id="statAmort">0</span>
+      </div>
+      <div class="mini-stat highlight">
+        <span class="mini-label">Résultat fiscal</span>
+        <span class="mini-value" data-counter id="statResultat">0</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Navigation par étapes -->
+  <nav class="stepper" id="stepper">
+    <button class="step active" data-step="bien"><i>1</i><span>Le bien</span></button>
+    <button class="step" data-step="recettes"><i>2</i><span>Recettes</span></button>
+    <button class="step" data-step="depenses"><i>3</i><span>Dépenses</span></button>
+    <button class="step" data-step="amortissements"><i>4</i><span>Amort. &amp; financement</span></button>
+    <button class="step" data-step="synthese"><i>5</i><span>Synthèse</span></button>
+    <button class="step" data-step="liasse"><i>6</i><span>Liasse fiscale</span></button>
+  </nav>
+
+  <!-- Barre des exercices -->
+  <div class="exercice-bar hidden" id="exerciceBar" aria-label="Sélection de l'exercice"></div>
+
+  <main class="container">
+
+    <!-- ÉTAPE 1 — LE BIEN -->
+    <section class="panel active" data-panel="bien">
+      <div class="panel-head">
+        <h2>Le bien</h2>
+        <p>Informations générales sur le logement loué. Ces données sont communes à tous les exercices ; les années se gèrent ensuite via la barre des exercices.</p>
+      </div>
+      <div class="grid grid-2">
+        <label class="field">
+          <span>Désignation du bien</span>
+          <input type="text" id="bien_nom" placeholder="Ex. Studio Rue Victor Hugo" />
+        </label>
+        <label class="field">
+          <span>Adresse</span>
+          <input type="text" id="bien_adresse" placeholder="12 rue Victor Hugo, 33000 Bordeaux" />
+        </label>
+        <label class="field">
+          <span>Date de début d'activité</span>
+          <input type="date" id="bien_debut" />
+        </label>
+        <label class="field">
+          <span>Régime</span>
+          <input type="text" id="bien_regime" value="LMNP — réel simplifié" disabled />
+        </label>
+        <label class="field">
+          <span>Apport / trésorerie de départ (€)</span>
+          <input type="number" id="bien_apport" placeholder="0" step="0.01" />
+          <small>Capital de départ sur le compte dédié, à l'ouverture du premier exercice.</small>
+        </label>
+        <label class="field">
+          <span>Capital emprunté initial (€)</span>
+          <input type="number" id="bien_emprunt_init" placeholder="0" step="0.01" />
+          <small>Montant de l'emprunt à l'acquisition (sert au bilan d'ouverture).</small>
+        </label>
+      </div>
+      <div class="panel-foot">
+        <button class="btn btn-primary next" data-next="recettes" type="button">Suivant : Recettes →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 2 — RECETTES -->
+    <section class="panel" data-panel="recettes">
+      <div class="panel-head">
+        <h2>Recettes locatives</h2>
+        <p>Loyers et charges refacturées <strong>réellement encaissés</strong> sur l'exercice (compte 706).</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tableRecettes">
+          <thead>
+            <tr>
+              <th style="width:140px">Date</th>
+              <th>Locataire</th>
+              <th>Libellé</th>
+              <th style="width:160px" class="num">Montant (€)</th>
+              <th style="width:48px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="foot-label">Total recettes encaissées</td>
+              <td class="num strong" id="totalRecettes">0,00&nbsp;€</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="panel-foot between">
+        <button class="btn btn-soft add-row" data-target="recettes" type="button">+ Ajouter une recette</button>
+        <button class="btn btn-primary next" data-next="depenses" type="button">Suivant : Dépenses →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 3 — DÉPENSES -->
+    <section class="panel" data-panel="depenses">
+      <div class="panel-head">
+        <h2>Dépenses déductibles</h2>
+        <p>Charges payées sur l'exercice. La catégorie détermine le compte comptable utilisé dans le FEC.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="tableDepenses">
+          <thead>
+            <tr>
+              <th style="width:140px">Date</th>
+              <th style="width:240px">Catégorie</th>
+              <th>Libellé</th>
+              <th style="width:160px" class="num">Montant (€)</th>
+              <th style="width:48px"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3" class="foot-label">Total charges déductibles</td>
+              <td class="num strong" id="totalDepenses">0,00&nbsp;€</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="panel-foot between">
+        <button class="btn btn-soft add-row" data-target="depenses" type="button">+ Ajouter une dépense</button>
+        <button class="btn btn-primary next" data-next="amortissements" type="button">Suivant : Amortissements →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 4 — AMORTISSEMENTS & FINANCEMENT -->
+    <section class="panel" data-panel="amortissements">
+      <div class="panel-head">
+        <h2>Amortissements & financement</h2>
+        <p>L'amortissement étale la valeur des biens sur leur durée d'usage. Le terrain n'est pas amortissable.</p>
+      </div>
+
+      <h3 class="sub-title">Composantes amortissables</h3>
+      <p class="hint">Les immobilisations sont communes à tous les exercices. L'année d'acquisition sert à calculer le report des amortissements d'une année sur l'autre. La dotation affichée est celle de l'exercice sélectionné.</p>
+      <div class="amort-grid">
+        <div class="amort-card">
+          <h4>Immeuble / construction</h4>
+          <label class="field"><span>Valeur d'acquisition (€)</span><input type="number" id="am_immeuble_val" step="0.01" placeholder="0" /></label>
+          <label class="field"><span>Quote-part terrain (%)</span><input type="number" id="am_immeuble_terrain" step="1" placeholder="15" /></label>
+          <div class="grid grid-2">
+            <label class="field"><span>Durée (ans)</span><input type="number" id="am_immeuble_duree" step="1" placeholder="30" /></label>
+            <label class="field"><span>Année acq.</span><input type="number" id="am_immeuble_acq" step="1" placeholder="2024" /></label>
+          </div>
+          <div class="amort-result">Dotation de l'exercice : <strong id="am_immeuble_dot">0,00 €</strong></div>
+        </div>
+        <div class="amort-card">
+          <h4>Mobilier & équipement</h4>
+          <label class="field"><span>Valeur (€)</span><input type="number" id="am_mobilier_val" step="0.01" placeholder="0" /></label>
+          <div class="grid grid-2">
+            <label class="field"><span>Durée (ans)</span><input type="number" id="am_mobilier_duree" step="1" placeholder="7" /></label>
+            <label class="field"><span>Année acq.</span><input type="number" id="am_mobilier_acq" step="1" placeholder="2024" /></label>
+          </div>
+          <div class="amort-result">Dotation de l'exercice : <strong id="am_mobilier_dot">0,00 €</strong></div>
+        </div>
+        <div class="amort-card">
+          <h4>Travaux</h4>
+          <label class="field"><span>Valeur (€)</span><input type="number" id="am_travaux_val" step="0.01" placeholder="0" /></label>
+          <div class="grid grid-2">
+            <label class="field"><span>Durée (ans)</span><input type="number" id="am_travaux_duree" step="1" placeholder="10" /></label>
+            <label class="field"><span>Année acq.</span><input type="number" id="am_travaux_acq" step="1" placeholder="2024" /></label>
+          </div>
+          <div class="amort-result">Dotation de l'exercice : <strong id="am_travaux_dot">0,00 €</strong></div>
+        </div>
+      </div>
+
+      <h3 class="sub-title">Financement</h3>
+      <div class="grid grid-2">
+        <label class="field">
+          <span>Capital emprunté restant dû à la clôture (€)</span>
+          <input type="number" id="fin_emprunt" step="0.01" placeholder="0" />
+          <small>Propre à l'exercice sélectionné. Figure au passif du bilan.</small>
+        </label>
+        <div class="field readonly">
+          <span>Total dotations de l'exercice</span>
+          <output id="am_total_dot">0,00 €</output>
+        </div>
+      </div>
+
+      <div class="panel-foot">
+        <button class="btn btn-primary next" data-next="synthese" type="button">Suivant : Synthèse →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 5 — SYNTHÈSE & EXPORT -->
+    <section class="panel" data-panel="synthese" id="exercice">
+      <div class="panel-head">
+        <h2>Synthèse comptable</h2>
+        <p>Compte de résultat et bilan de l'exercice sélectionné, avec report des exercices antérieurs.</p>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn btn-primary" id="exportBilan" type="button">⤓ Bilan (CSV)</button>
+        <button class="btn btn-primary" id="exportCR" type="button">⤓ Compte de résultat (CSV)</button>
+        <button class="btn btn-accent" id="exportFEC" type="button">⤓ FEC (.txt)</button>
+        <button class="btn btn-ghost" id="btnPrint" type="button">🖨 Imprimer / PDF</button>
+      </div>
+
+      <div class="statements">
+        <div class="statement-card">
+          <div class="statement-head">
+            <h3>Compte de résultat</h3>
+            <span class="tag" id="crResultatTag">—</span>
+          </div>
+          <div class="statement-body" id="crBody"><!-- généré --></div>
+        </div>
+        <div class="statement-card">
+          <div class="statement-head">
+            <h3>Bilan</h3>
+            <span class="tag tag-ok" id="bilanEquilibre">Équilibré</span>
+          </div>
+          <div class="bilan-cols" id="bilanBody"><!-- généré --></div>
+        </div>
+      </div>
+
+      <div class="panel-foot">
+        <button class="btn btn-primary next" data-next="liasse" type="button">Suivant : Liasse fiscale →</button>
+      </div>
+    </section>
+
+    <!-- ÉTAPE 6 — LIASSE FISCALE -->
+    <section class="panel" data-panel="liasse">
+      <div class="panel-head">
+        <h2>Liasse fiscale <span class="tag tag-ok" id="liasseTag">—</span></h2>
+        <p>Tableaux 2033 du régime réel simplifié, mis en forme à partir de votre comptabilité, avec passage du résultat comptable au résultat fiscal (art. 39 C, déficits reportables).</p>
+      </div>
+
+      <div class="export-bar">
+        <button class="btn btn-accent" id="exportLiasse" type="button">⤓ Exporter la liasse (CSV)</button>
+        <button class="btn btn-ghost" id="btnPrintLiasse" type="button">🖨 Imprimer la liasse / PDF</button>
+      </div>
+
+      <div class="liasse-grid">
+        <div class="liasse-card highlight" id="l2031"></div>
+        <div class="liasse-card" id="l2033b"></div>
+        <div class="liasse-card" id="l2033a"></div>
+        <div class="liasse-card" id="l2033c"></div>
+        <div class="liasse-card" id="l2033d"></div>
+      </div>
+      <p class="disclaimer" style="margin-top:18px">
+        Le résultat fiscal calculé est à reporter sur la déclaration <strong>2042-C-PRO</strong> (revenus BIC non professionnels).
+        Modèle simplifié : vérifiez avec votre centre de gestion ou expert-comptable avant dépôt.
+      </p>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>LMNP&nbsp;Compta — v2. Données enregistrées localement dans votre navigateur, rien n'est envoyé en ligne.</p>
+    <p class="disclaimer">Outil d'aide à la tenue comptable. Ne se substitue pas à un expert-comptable. Modèle simplifié à des fins de démonstration.</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
